@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>我的日程计划</title>
-<link rel="manifest" href="data:application/json,{%22name%22:%22我的日程计划%22,%22short_name%22:%22日程计划%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22%23f9fafb%22,%22theme_color%22:%22%234f46e5%22}">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4F46E5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1020,49 +1020,49 @@
     <h2>📱 安装到手机</h2>
   </div>
   <div style="padding:16px;">
+    <div class="update-safe-note" style="background:#FFF7ED;border-color:#FED7AA;margin-bottom:16px;">
+      <span class="safe-icon">⚠️</span>
+      <span class="safe-text" style="color:#9A3412"><strong>重要前提</strong><br>你必须先把本文件部署到 <strong>GitHub Pages</strong>（或任意网页托管），手机和电脑都通过 <strong>同一个网址</strong>（如 <code>https://xxx.github.io/xxx/summer-planner.html</code>）打开，才能实现数据同步。如果手机上打开的是本地文件（<code>file:///...</code>），数据无法同步！</span>
+    </div>
     <div class="install-guide">
-      <h4>QQ浏览器安装方法</h4>
+      <h4>📌 第一步：部署到 GitHub Pages</h4>
       <div class="install-step">
         <span class="step-icon">1️⃣</span>
-        <span>用QQ浏览器打开本页面</span>
+        <span>把 <code>summer-planner.html</code> 和 <code>manifest.json</code> 两个文件上传到你的 GitHub 仓库</span>
       </div>
       <div class="install-step">
         <span class="step-icon">2️⃣</span>
-        <span>点击屏幕 <strong>右下角「⋮」三个点</strong> 菜单</span>
+        <span>进入仓库 Settings → Pages → Source 选 <strong>main</strong> 分支</span>
       </div>
       <div class="install-step">
         <span class="step-icon">3️⃣</span>
-        <span>在菜单中找到并点击 <strong>「工具箱」</strong></span>
+        <span>保存后会生成一个网址（如 <code>https://你的用户名.github.io/仓库名/summer-planner.html</code>）</span>
+      </div>
+    </div>
+    <div class="install-guide" style="margin-top:12px">
+      <h4>📱 第二步：手机安装到桌面</h4>
+      <div class="install-step">
+        <span class="step-icon">1️⃣</span>
+        <span>用手机浏览器（QQ浏览器/Chrome/Safari）打开上面的 <strong>GitHub Pages 网址</strong></span>
       </div>
       <div class="install-step">
-        <span class="step-icon">4️⃣</span>
-        <span>选择 <strong>「添加快捷方式」→「手机桌面」</strong></span>
+        <span class="step-icon">2️⃣</span>
+        <span><strong>QQ浏览器</strong>：点右下角「⋮」→「工具箱」→「添加快捷方式」→「手机桌面」</span>
       </div>
       <div class="install-step">
-        <span class="step-icon">5️⃣</span>
-        <span>点击确定，桌面就会出现图标</span>
+        <span class="step-icon">2️⃣</span>
+        <span><strong>Chrome</strong>：点右上角「⋮」→「添加到主屏幕」</span>
+      </div>
+      <div class="install-step">
+        <span class="step-icon">2️⃣</span>
+        <span><strong>Safari</strong>：点底部分享按钮 →「添加到主屏幕」</span>
       </div>
       <div class="install-tip">
-        💡 如果找不到"添加快捷方式"，也可以点击菜单中的 <strong>「分享」</strong>，然后选择 <strong>「添加到主屏幕」</strong> 或 <strong>「添加到桌面」</strong>。
+        💡 安装后桌面会出现图标，点击打开就像一个真正的 APP。
       </div>
     </div>
-    <div class="install-guide">
-      <h4>其他浏览器</h4>
-      <div class="install-step">
-        <span class="step-icon">🍎</span>
-        <span>Safari：点分享按钮 → 「添加到主屏幕」</span>
-      </div>
-      <div class="install-step">
-        <span class="step-icon">🌐</span>
-        <span>Chrome：点右上角菜单 → 「添加到主屏幕」</span>
-      </div>
-      <div class="install-step">
-        <span class="step-icon">🔵</span>
-        <span>Edge：点菜单 → 「添加到主屏幕」</span>
-      </div>
-    </div>
-    <div class="install-tip" style="margin-top:16px">
-      ⚠️ 安装后每次打开，只要不清理浏览器数据，你的计划都会保留在本地。
+    <div class="install-tip" style="margin-top:12px">
+      ⚠️ <strong>注意：</strong>安装的是网页书签，每次打开会访问 GitHub Pages 上的文件。如果更新了 HTML 文件并推送到 GitHub，下次打开手机就会自动使用最新版本。
     </div>
   </div>
 </div>
@@ -1076,53 +1076,68 @@
   <div style="padding:16px;">
     <div class="update-safe-note" style="background:#EFF6FF;border-color:#BFDBFE;margin-bottom:16px;">
       <span class="safe-icon">☁️</span>
-      <span class="safe-text" style="color:#1E40AF"><strong>什么是云端同步？</strong><br>将你的计划数据存储到云端，手机和电脑访问同一网址，数据自动同步。无论在哪个设备上添加/修改任务，另一个设备刷新即可看到。</span>
+      <span class="safe-text" style="color:#1E40AF"><strong>前提条件</strong><br>必须先用 GitHub Pages 部署本页面，手机和电脑通过<strong>同一个网址</strong>访问，然后在此配置同步。如果手机打开的是本地文件，数据无法同步。</span>
     </div>
-    
+
     <div class="install-guide" style="margin-bottom:16px;">
-      <h4>第一步：注册 JSONBin.io</h4>
+      <h4>第一步：获取 JSONBin 密钥</h4>
       <div class="install-step">
         <span class="step-icon">1️⃣</span>
-        <span>用手机或电脑浏览器访问 <strong style="color:var(--primary)">jsonbin.io</strong></span>
+        <span>浏览器打开 <strong style="color:var(--primary)">jsonbin.io</strong> 并登录</span>
       </div>
       <div class="install-step">
         <span class="step-icon">2️⃣</span>
-        <span>点击 <strong>Sign Up Free</strong> 注册（只需邮箱）</span>
+        <span>点击右上角头像 → <strong>Access Keys</strong></span>
       </div>
       <div class="install-step">
         <span class="step-icon">3️⃣</span>
-        <span>登录后，点击右上角头像 → <strong>Access Keys</strong></span>
+        <span>复制页面最上方的 <strong>X-MASTER-KEY</strong>（以 <code>$2a$10$</code> 开头）</span>
       </div>
-      <div class="install-step">
-        <span class="step-icon">4️⃣</span>
-        <span>点击 <strong>Create Access Key</strong>，复制生成的 API Key</span>
+      <div class="install-tip" style="margin-top:8px">
+        ⚠️ 用 <strong>X-MASTER-KEY</strong>（最上面那个），不要用 X-ACCESS-KEY（下面 PLANNING 那个）
       </div>
     </div>
 
     <div class="install-guide">
-      <h4>第二步：填入配置</h4>
+      <h4>第二步：填入密钥并连接</h4>
       <div class="form-group">
-        <label class="form-label">API Key（Access Key）</label>
-        <input type="text" class="form-input" id="syncApiKey" placeholder="粘贴你的 JSONBin API Key">
+        <label class="form-label">X-MASTER-KEY</label>
+        <input type="text" class="form-input" id="syncApiKey" placeholder="粘贴你的 X-MASTER-KEY">
+      </div>
+      <div id="binIdGroup" class="form-group" style="display:none">
+        <label class="form-label">数据桶 ID（Bin ID）</label>
+        <div style="display:flex;gap:6px;">
+          <input type="text" class="form-input" id="syncBinIdInput" placeholder="粘贴 Bin ID，或留空创建新的">
+          <button class="btn btn-secondary" style="flex:none;padding:10px 12px;font-size:12px" onclick="toggleBinIdHelp()">❓</button>
+        </div>
+        <div id="binIdHelp" style="display:none;margin-top:6px;">
+          <div class="install-tip" style="margin:0">💡 <strong>怎么获取 Bin ID？</strong><br>在电脑上点过「创建云存储」后，设置页会显示 Bin ID（如 <code>6xxxxxxxfxxxx</code>），复制过来即可。手机上留空就会创建新的数据桶，导致数据不同步！
+          </div>
+        </div>
       </div>
       <div class="form-actions" style="padding:0;border:none;">
-        <button class="btn btn-primary" onclick="initCloudSync()">保存并创建云存储</button>
+        <button class="btn btn-primary" onclick="initCloudSync()">连接/创建云存储</button>
       </div>
     </div>
 
     <div id="syncStatusArea" style="display:none;margin-top:16px;">
-      <div class="install-guide">
-        <h4>第三步：同步数据</h4>
-        <p style="font-size:12px;color:var(--gray-500);margin-bottom:12px" id="syncBinInfo">--</p>
+      <div class="install-guide" style="border-left:4px solid var(--success);">
+        <h4 style="color:var(--success)">✅ 已连接云端</h4>
+        <p style="font-size:12px;color:var(--gray-500);margin-bottom:8px">Bin ID: <code id="syncBinInfo">--</code></p>
+        <p style="font-size:11px;color:var(--gray-400);margin-bottom:12px" id="syncTimeInfo">上次同步: --</p>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" style="flex:1" onclick="uploadToCloud()">📤 上传数据</button>
-          <button class="btn btn-secondary" style="flex:1" onclick="downloadFromCloud()">📥 下载数据</button>
+          <button class="btn btn-primary" style="flex:1" onclick="uploadToCloud()">📤 上传到云端</button>
+          <button class="btn btn-secondary" style="flex:1" onclick="downloadFromCloud()">📥 从云端下载</button>
         </div>
         <div class="install-tip" style="margin-top:12px;">
-          💡 <strong>操作说明：</strong><br>
-          「上传」= 把当前数据推送到云端（覆盖云端）<br>
-          「下载」= 从云端拉取数据（覆盖本地）<br>
-          建议先在一个设备上传，再在另一设备下载。
+          💡 <strong>使用流程：</strong><br>
+          ① <strong>电脑</strong>上先完成配置（填入 Master Key → 点「连接/创建云存储」→ 点「上传到云端」）<br>
+          ② <strong>手机</strong>上打开同一个网址 → 设置 → 云端同步 → 填入相同的 Master Key 和 Bin ID → 点「连接/创建云存储」→ 数据会自动同步<br>
+          ③ 以后每次修改完计划，点一下「上传到云端」，换设备后自动拉取最新数据
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;">
+          <button class="btn btn-secondary" style="flex:1;font-size:12px" onclick="copySyncConfig()">📋 复制配置信息</button>
+          <button class="btn btn-secondary" style="flex:1;font-size:12px;background:var(--danger-light);color:var(--danger)" onclick="resetCloudSync()">断开连接</button>
         </div>
       </div>
     </div>
@@ -1857,47 +1872,102 @@ const SYNC_API_BASE = 'https://api.jsonbin.io/v3';
 function showSyncPanel() {
   const s = loadSettings();
   document.getElementById('syncApiKey').value = s._syncApiKey || '';
+  if (s._syncApiKey) {
+    document.getElementById('binIdGroup').style.display = 'block';
+    document.getElementById('syncBinIdInput').value = s._syncBinId || '';
+  }
   if (s._syncBinId) {
     document.getElementById('syncStatusArea').style.display = 'block';
-    document.getElementById('syncBinInfo').textContent = 'Bin ID: ' + s._syncBinId + '（已配置）';
-    document.getElementById('syncDesc').textContent = '已配置 ✓';
+    document.getElementById('syncBinInfo').textContent = s._syncBinId;
+    const lastSync = s._lastSyncTime ? new Date(s._lastSyncTime).toLocaleString('zh-CN') : '--';
+    document.getElementById('syncTimeInfo').textContent = '上次同步: ' + lastSync;
+    document.getElementById('syncDesc').textContent = '已连接 ✓';
   } else {
     document.getElementById('syncStatusArea').style.display = 'none';
-    document.getElementById('syncDesc').textContent = '未配置 — 点击设置';
+    document.getElementById('syncDesc').textContent = s._syncApiKey ? '已填入密钥，未创建数据桶' : '未配置 — 点击设置';
   }
   document.getElementById('syncPanel').classList.add('show');
 }
 function closeSyncPanel() { document.getElementById('syncPanel').classList.remove('show'); }
 
+function toggleBinIdHelp() {
+  const el = document.getElementById('binIdHelp');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function copySyncConfig() {
+  const s = loadSettings();
+  if (!s._syncApiKey || !s._syncBinId) { showToast('未配置同步'); return; }
+  const text = `日程计划-云同步配置\nX-MASTER-KEY: ${s._syncApiKey}\nBin ID: ${s._syncBinId}\n\n在另一设备上：设置→云端同步→设置→填入以上信息→点击"连接"`;
+  copyToClipboard(text);
+  showToast('配置信息已复制，发给另一设备');
+}
+
+function resetCloudSync() {
+  showConfirm('确定断开云端同步连接？本地数据不受影响。', () => {
+    const s = loadSettings();
+    delete s._syncBinId;
+    delete s._lastSyncTime;
+    saveSettings(s);
+    showSyncPanel(); // refresh panel
+    showToast('已断开连接');
+  });
+}
+
 async function initCloudSync() {
   const apiKey = document.getElementById('syncApiKey').value.trim();
-  if (!apiKey) { showToast('请先填入 API Key'); return; }
-  showToast('正在创建云存储...');
-  try {
-    const s = loadSettings();
-    // If we already have a bin ID, just save the key
-    if (s._syncBinId) {
-      s._syncApiKey = apiKey;
-      saveSettings(s);
-      showToast('API Key 已更新');
+  if (!apiKey) { showToast('请先填入 X-MASTER-KEY'); return; }
+  
+  const binIdInput = document.getElementById('syncBinIdInput').value.trim();
+  
+  // Save the key first
+  const s = loadSettings();
+  s._syncApiKey = apiKey;
+  saveSettings(s);
+  
+  // If a Bin ID was provided, try to connect to it
+  if (binIdInput) {
+    showToast('正在连接数据桶...');
+    try {
+      const res = await fetch(`${SYNC_API_BASE}/b/${binIdInput}/latest`, {
+        headers: { 'X-Master-Key': apiKey }
+      });
+      if (!res.ok) throw new Error('无法访问该数据桶 (HTTP ' + res.status + ')');
+      const data = await res.json();
+      if (data.record) {
+        s._syncBinId = binIdInput;
+        saveSettings(s);
+        showToast('连接成功！');
+        showSyncPanel();
+        return;
+      } else {
+        throw new Error('数据桶为空或格式异常');
+      }
+    } catch (e) {
+      showToast('连接失败：' + e.message);
       return;
     }
-    // Create a new bin
-    const initialData = { plans: loadPlans(), settings: loadSettings(), lastSync: null, syncedFrom: null };
+  }
+  
+  // No Bin ID — create a new one
+  showToast('正在创建新的云存储...');
+  try {
+    const initialData = { plans: loadPlans(), settings: loadSettings(), lastSync: null, syncedFrom: 'init' };
     const res = await fetch(`${SYNC_API_BASE}/b`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey, 'X-Bin-Private': 'true' },
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey, 'X-Bin-Private': 'true', 'X-Bin-Name': 'my-schedule-planner' },
       body: JSON.stringify(initialData)
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + (errText ? ': ' + errText.substring(0, 100) : ''));
+    }
     const data = await res.json();
-    s._syncApiKey = apiKey;
     s._syncBinId = data.metadata.id;
+    s._lastSyncTime = new Date().toISOString();
     saveSettings(s);
-    document.getElementById('syncStatusArea').style.display = 'block';
-    document.getElementById('syncBinInfo').textContent = 'Bin ID: ' + s._syncBinId + '（已创建）';
-    document.getElementById('syncDesc').textContent = '已配置 ✓';
     showToast('云存储创建成功！');
+    showSyncPanel();
   } catch (e) {
     showToast('创建失败：' + e.message);
   }
@@ -1908,13 +1978,16 @@ async function uploadToCloud() {
   if (!s._syncApiKey || !s._syncBinId) { showToast('请先配置云同步'); return; }
   showToast('正在上传...');
   try {
-    const payload = { plans: loadPlans(), settings: loadSettings(), lastSync: new Date().toISOString(), syncedFrom: navigator.userAgent };
+    const payload = { plans: loadPlans(), settings: { ...loadSettings(), _syncApiKey: undefined, _syncBinId: undefined }, lastSync: new Date().toISOString(), syncedFrom: navigator.userAgent.substring(0, 80) };
     const res = await fetch(`${SYNC_API_BASE}/b/${s._syncBinId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Master-Key': s._syncApiKey },
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
+    s._lastSyncTime = new Date().toISOString();
+    saveSettings(s);
+    document.getElementById('syncTimeInfo').textContent = '上次同步: ' + new Date().toLocaleString('zh-CN');
     showToast('上传成功！数据已同步到云端');
   } catch (e) {
     showToast('上传失败：' + e.message);
@@ -1932,22 +2005,27 @@ async function downloadFromCloud() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.record && data.record.plans) {
-      showConfirm('将用云端数据覆盖本地数据，确定吗？', () => {
+      showConfirm('将用云端数据覆盖本地所有计划，确定吗？', () => {
         savePlans(data.record.plans);
         if (data.record.settings) {
-          // Merge settings, keep sync config
           const localSettings = loadSettings();
-          const cloudSettings = { ...localSettings, ...data.record.settings };
-          cloudSettings._syncApiKey = localSettings._syncApiKey;
-          cloudSettings._syncBinId = localSettings._syncBinId;
-          saveSettings(cloudSettings);
+          // Keep local sync config, merge everything else from cloud
+          Object.keys(data.record.settings).forEach(key => {
+            if (key !== '_syncApiKey' && key !== '_syncBinId') {
+              localSettings[key] = data.record.settings[key];
+            }
+          });
+          saveSettings(localSettings);
         }
+        s._lastSyncTime = new Date().toISOString();
+        saveSettings(s);
         render();
         updateModeUI();
-        showToast('下载成功！数据已同步到本地');
+        document.getElementById('syncTimeInfo').textContent = '上次同步: ' + new Date().toLocaleString('zh-CN');
+        showToast('下载成功！数据已同步到本地，刷新页面生效');
       });
     } else {
-      showToast('云端数据格式异常');
+      showToast('云端数据为空或格式异常');
     }
   } catch (e) {
     showToast('下载失败：' + e.message);
@@ -1955,7 +2033,7 @@ async function downloadFromCloud() {
 }
 
 // ===== VERSION & UPDATE SYSTEM =====
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.2';
 const APP_BUILD = '20260725';
 
 const CHANGELOG = [
@@ -2086,6 +2164,75 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove('show'), 2500);
 }
 
+// ===== AUTO SYNC ON START =====
+async function autoSyncOnStart() {
+  const s = loadSettings();
+  if (!s._syncApiKey || !s._syncBinId) return;
+  
+  // Check if currently running from a local file
+  const isLocalFile = window.location.protocol === 'file:';
+  
+  try {
+    const res = await fetch(`${SYNC_API_BASE}/b/${s._syncBinId}/latest`, {
+      headers: { 'X-Master-Key': s._syncApiKey }
+    });
+    if (!res.ok) return;
+    
+    const data = await res.json();
+    if (!data.record || !data.record.plans) return;
+    
+    const cloudTime = data.record.lastSync ? new Date(data.record.lastSync).getTime() : 0;
+    const localTime = s._lastSyncTime ? new Date(s._lastSyncTime).getTime() : 0;
+    const localPlanCount = Object.keys(loadPlans()).length;
+    
+    // Cloud has newer data and local is empty or older
+    if (cloudTime > localTime) {
+      if (localPlanCount === 0) {
+        // Auto-download if local has no data
+        savePlans(data.record.plans);
+        if (data.record.settings) {
+          const localS = loadSettings();
+          Object.keys(data.record.settings).forEach(key => {
+            if (key !== '_syncApiKey' && key !== '_syncBinId') {
+              localS[key] = data.record.settings[key];
+            }
+          });
+          saveSettings(localS);
+        }
+        s._lastSyncTime = new Date().toISOString();
+        saveSettings(s);
+        render();
+        updateModeUI();
+        showToast('已自动同步云端数据');
+      } else {
+        // Local has data - ask user
+        const diff = Math.round((cloudTime - localTime) / 60000);
+        const timeStr = diff < 60 ? diff + '分钟前' : Math.round(diff / 60) + '小时前';
+        showConfirm(`云端数据比本地新（${timeStr}更新）。\n是否用云端数据覆盖本地？`, () => {
+          savePlans(data.record.plans);
+          if (data.record.settings) {
+            const localS = loadSettings();
+            Object.keys(data.record.settings).forEach(key => {
+              if (key !== '_syncApiKey' && key !== '_syncBinId') {
+                localS[key] = data.record.settings[key];
+              }
+            });
+            saveSettings(localS);
+          }
+          s._lastSyncTime = new Date().toISOString();
+          saveSettings(s);
+          render();
+          updateModeUI();
+          showToast('同步完成');
+        });
+      }
+    }
+  } catch (e) {
+    // Silently fail on auto-sync
+    console.log('Auto sync skipped:', e.message);
+  }
+}
+
 // ===== INIT =====
 function init() {
   migrateIfNeeded();
@@ -2094,6 +2241,9 @@ function init() {
   if (s.notifEnabled) { document.getElementById('notifSwitch').checked = true; startNotifChecker(); }
   render();
   setInterval(render, 60000);
+  
+  // Auto-sync on startup (with a small delay to let UI render first)
+  setTimeout(() => autoSyncOnStart(), 1500);
 }
 
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
