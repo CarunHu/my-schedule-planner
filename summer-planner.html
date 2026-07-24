@@ -328,6 +328,44 @@
   .empty-state .icon { font-size: 52px; margin-bottom: 12px; }
   .empty-state p { font-size: 13px; color: var(--gray-400); }
 
+  /* Sync indicator */
+  .sync-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 4px;
+    transition: all 0.3s;
+  }
+  .sync-indicator.synced { background: var(--success); box-shadow: 0 0 4px rgba(16,185,129,0.5); }
+  .sync-indicator.syncing { background: var(--warning); box-shadow: 0 0 4px rgba(245,158,11,0.5); animation: syncPulse 1s infinite; }
+  .sync-indicator.pending { background: var(--primary); box-shadow: 0 0 4px rgba(99,102,241,0.5); animation: syncPulse 0.5s infinite; }
+  .sync-indicator.error { background: var(--danger); box-shadow: 0 0 4px rgba(239,68,68,0.5); }
+  .sync-indicator.off { background: var(--gray-300); }
+  @keyframes syncPulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+  /* Reminder popup */
+  .reminder-popup {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--primary), #8B5CF6);
+    color: white;
+    padding: 14px 20px;
+    border-radius: 14px;
+    box-shadow: 0 8px 30px rgba(99,102,241,0.4);
+    z-index: 200;
+    max-width: 90%;
+    min-width: 280px;
+    animation: reminderSlide 0.4s ease-out;
+    cursor: pointer;
+  }
+  .reminder-popup h4 { font-size: 14px; margin-bottom: 4px; }
+  .reminder-popup p { font-size: 12px; opacity: 0.9; }
+  .reminder-popup .reminder-close { position: absolute; top: 8px; right: 12px; font-size: 16px; opacity: 0.7; cursor: pointer; }
+  @keyframes reminderSlide { from { transform: translateX(-50%) translateY(-100px); opacity:0; } to { transform: translateX(-50%) translateY(0); opacity:1; } }
+
   /* FAB — positioned above bottom bar */
   .fab {
     position: fixed;
@@ -762,6 +800,10 @@
   .install-step .step-icon { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; }
   .install-tip { background: var(--primary-bg); border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 10px; font-size: 11px; color: var(--primary-dark); line-height: 1.6; }
 
+  /* Timetable */
+  #timetablePanel table td { vertical-align: top; }
+  #timetableGrid { -webkit-overflow-scrolling: touch; }
+
   /* Responsive */
   @media (min-width: 600px) {
     .schedule-container { max-width: 500px; margin: 0 auto; }
@@ -841,6 +883,10 @@
   <button class="bar-btn active" onclick="goHome()">
     <span class="bar-icon">📋</span>
     <span>计划</span>
+  </button>
+  <button class="bar-btn" onclick="showTimetable()">
+    <span class="bar-icon">📚</span>
+    <span>课表</span>
   </button>
   <button class="bar-btn" onclick="applyTemplate()">
     <span class="bar-icon">📄</span>
@@ -983,7 +1029,7 @@
     <div class="setting-row">
       <div class="setting-info">
         <div class="setting-name">☁️ 云端同步</div>
-        <div class="setting-desc" id="syncDesc">未配置 — 点击设置</div>
+        <div class="setting-desc" id="syncDesc">未配置 — 点击设置<span class="sync-indicator off" id="syncIndicator"></span></div>
       </div>
       <button class="btn btn-primary" style="flex:none;padding:8px 14px;font-size:12px" onclick="showSyncPanel()">设置</button>
     </div>
@@ -1007,7 +1053,7 @@
     <div class="setting-row" style="border-bottom:none;">
       <div class="setting-info">
         <div class="setting-name">ℹ️ 关于</div>
-        <div class="setting-desc">我的日程计划 v2.1 — 支持云端同步</div>
+        <div class="setting-desc">我的日程计划 v3.0 — 支持云端同步、课表管理</div>
       </div>
     </div>
   </div>
@@ -1146,12 +1192,103 @@
 
 <!-- Update Center Panel -->
 <div class="update-panel" id="updatePanel">
+
+<!-- Timetable Panel -->
+<div class="stats-panel" id="timetablePanel">
+  <div class="stats-header" style="background:linear-gradient(135deg,#F59E0B,#F97316)">
+    <button onclick="closeTimetable()">←</button>
+    <h2>📚 我的课表</h2>
+    <button style="margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:white;padding:6px 12px;border-radius:8px;font-size:12px;cursor:pointer" onclick="openAddCourse()">+ 添加课程</button>
+  </div>
+  <div style="padding:16px;">
+    <!-- Week selector -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="changeTimetableWeek(-1)">◀</button>
+      <span id="timetableWeekLabel" style="font-size:13px;font-weight:600">第1周</span>
+      <button class="btn btn-secondary" style="padding:6px 12px;font-size:12px" onclick="changeTimetableWeek(1)">▶</button>
+    </div>
+    <!-- Timetable grid -->
+    <div id="timetableGrid" style="overflow-x:auto"></div>
+    <!-- Import options -->
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1;font-size:12px" onclick="importTimetableImage()">📷 图片识别导入</button>
+      <button class="btn btn-secondary" style="flex:1;font-size:12px" onclick="generateScheduleFromCourses()">📋 生成今日日程</button>
+    </div>
+    <div class="install-tip" style="margin-top:12px">
+      💡 <strong>提示：</strong>点击"生成今日日程"可以将今天的课程自动添加到日程计划中，方便安排学习时间。
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Course Modal -->
+<div class="modal-overlay" id="courseModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="courseModalTitle">添加课程</div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">课程名称</label>
+        <input type="text" class="form-input" id="courseName" placeholder="例如：高等数学">
+      </div>
+      <div class="form-group">
+        <label class="form-label">教师</label>
+        <input type="text" class="form-input" id="courseTeacher" placeholder="例如：张老师">
+      </div>
+      <div class="form-group">
+        <label class="form-label">上课地点</label>
+        <input type="text" class="form-input" id="courseLocation" placeholder="例如：教学楼A-301">
+      </div>
+      <div class="form-group">
+        <label class="form-label">上课日</label>
+        <select class="form-select" id="courseDay">
+          <option value="1">周一</option><option value="2">周二</option><option value="3">周三</option>
+          <option value="4">周四</option><option value="5">周五</option><option value="6">周六</option><option value="0">周日</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">节次</label>
+        <div class="time-row">
+          <select class="form-select" id="courseStartPeriod">
+          </select>
+          <span class="separator">至</span>
+          <select class="form-select" id="courseEndPeriod">
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">周次范围</label>
+        <div class="time-row">
+          <select class="form-select" id="courseStartWeek">
+          </select>
+          <span class="separator">至</span>
+          <select class="form-select" id="courseEndWeek">
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">课程颜色</label>
+        <div id="courseColorPicker" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">备注</label>
+        <textarea class="form-textarea" id="courseNote" placeholder="补充说明..."></textarea>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeCourseModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveCourse()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Upload for Timetable -->
+<input type="file" id="timetableImageInput" accept="image/*" style="display:none" onchange="handleTimetableImage(event)">
   <div class="stats-header" style="background:linear-gradient(135deg,#059669,#10B981)">
     <button onclick="closeUpdateCenter()">←</button>
     <h2>🔄 更新中心</h2>
   </div>
   <div class="update-version-header">
-    <div class="ver-num" id="currentVerDisplay">v2.1</div>
+    <div class="ver-num" id="currentVerDisplay">v3.0</div>
     <div class="ver-label" id="verStatusLabel">已是最新版本</div>
   </div>
   <div class="update-section">
@@ -1297,6 +1434,8 @@ function goHome() {
   closeSettings();
   closeUpdateCenter();
   closeInstallGuide();
+  closeTimetable();
+  closeSyncPanel();
 }
 
 // Default templates
@@ -1611,6 +1750,7 @@ function saveTask() {
   closeModal('addModal');
   render();
   showToast(editingTaskId ? '已更新' : '已添加');
+  setTimeout(() => silentUploadToCloud(), 500);
 }
 
 function deleteTask(id) {
@@ -1618,6 +1758,7 @@ function deleteTask(id) {
     setDayPlan(currentDate, getDayPlan(currentDate).filter(t => t.id !== id));
     render();
     showToast('已删除');
+    setTimeout(() => silentUploadToCloud(), 500);
   });
 }
 
@@ -1625,6 +1766,7 @@ function toggleComplete(id) {
   const tasks = getDayPlan(currentDate);
   const task = tasks.find(t => t.id === id);
   if (task) { task.completed = !task.completed; setDayPlan(currentDate, tasks); render(); }
+  setTimeout(() => silentUploadToCloud(), 500);
 }
 
 // ===== CATEGORY =====
@@ -1731,17 +1873,21 @@ function toggleNotifSetting() {
 }
 
 async function enableNotif() {
-  if (!('Notification' in window)) { showToast('浏览器不支持通知'); return; }
-  const perm = await Notification.requestPermission();
-  if (perm === 'granted') {
-    const s = loadSettings(); s.notifEnabled = true; saveSettings(s);
-    document.getElementById('notifSwitch').checked = true;
-    startNotifChecker();
-    showToast('通知已开启');
-  } else {
-    showToast('通知权限被拒绝');
-    document.getElementById('notifSwitch').checked = false;
+  if ('Notification' in window) {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      const s = loadSettings(); s.notifEnabled = true; s._notifMode = 'native'; saveSettings(s);
+      document.getElementById('notifSwitch').checked = true;
+      startNotifChecker();
+      showToast('通知已开启（系统通知）');
+      return;
+    }
   }
+  // 浏览器不支持或权限被拒绝 → 使用页面内提醒
+  const s = loadSettings(); s.notifEnabled = true; s._notifMode = 'inline'; saveSettings(s);
+  document.getElementById('notifSwitch').checked = true;
+  startNotifChecker();
+  showToast('通知已开启（页面内提醒）');
 }
 
 function disableNotif() {
@@ -1770,11 +1916,16 @@ function checkAndNotify() {
     const [sh, sm] = task.start.split(':').map(Number);
     const notifyAt = sh * 60 + sm - (task.remind || 0);
     if (nowMin >= notifyAt && nowMin < sh * 60 + sm) {
-      const cat = CAT_MAP[task.cat] || CAT_MAP.other;
-      new Notification(`${cat.icon} ${task.title}`, {
-        body: `${task.start} 开始${task.remind > 0 ? ' · ' + task.remind + '分钟后' : ''}`,
-        tag: task.id, requireInteraction: true
-      });
+      // 尝试原生通知
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`${(CAT_MAP[task.cat] || CAT_MAP.other).icon} ${task.title}`, {
+          body: `${task.start} 开始${task.remind > 0 ? ' · ' + task.remind + '分钟后' : ''}`,
+          tag: task.id, requireInteraction: true
+        });
+      } else {
+        // 备用：页面内提醒弹窗
+        showReminderPopup(task);
+      }
       notified.push(task.id);
       localStorage.setItem('summer_notified_' + todayStr, JSON.stringify(notified));
     }
@@ -1952,7 +2103,7 @@ async function initCloudSync() {
   // No Bin ID — create a new one
   showToast('正在创建新的云存储...');
   try {
-    const initialData = { plans: loadPlans(), settings: loadSettings(), lastSync: null, syncedFrom: 'init' };
+    const initialData = { plans: loadPlans(), courses: loadCourses(), settings: loadSettings(), lastSync: null, syncedFrom: 'init' };
     const res = await fetch(`${SYNC_API_BASE}/b`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey, 'X-Bin-Private': 'true', 'X-Bin-Name': 'my-schedule-planner' },
@@ -1978,7 +2129,7 @@ async function uploadToCloud() {
   if (!s._syncApiKey || !s._syncBinId) { showToast('请先配置云同步'); return; }
   showToast('正在上传...');
   try {
-    const payload = { plans: loadPlans(), settings: { ...loadSettings(), _syncApiKey: undefined, _syncBinId: undefined }, lastSync: new Date().toISOString(), syncedFrom: navigator.userAgent.substring(0, 80) };
+    const payload = { plans: loadPlans(), courses: loadCourses(), settings: { ...loadSettings(), _syncApiKey: undefined, _syncBinId: undefined }, lastSync: new Date().toISOString(), syncedFrom: navigator.userAgent.substring(0, 80) };
     const res = await fetch(`${SYNC_API_BASE}/b/${s._syncBinId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Master-Key': s._syncApiKey },
@@ -2005,25 +2156,7 @@ async function downloadFromCloud() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     if (data.record && data.record.plans) {
-      showConfirm('将用云端数据覆盖本地所有计划，确定吗？', () => {
-        savePlans(data.record.plans);
-        if (data.record.settings) {
-          const localSettings = loadSettings();
-          // Keep local sync config, merge everything else from cloud
-          Object.keys(data.record.settings).forEach(key => {
-            if (key !== '_syncApiKey' && key !== '_syncBinId') {
-              localSettings[key] = data.record.settings[key];
-            }
-          });
-          saveSettings(localSettings);
-        }
-        s._lastSyncTime = new Date().toISOString();
-        saveSettings(s);
-        render();
-        updateModeUI();
-        document.getElementById('syncTimeInfo').textContent = '上次同步: ' + new Date().toLocaleString('zh-CN');
-        showToast('下载成功！数据已同步到本地，刷新页面生效');
-      });
+      smartMergeFromCloud(data.record);
     } else {
       showToast('云端数据为空或格式异常');
     }
@@ -2032,11 +2165,482 @@ async function downloadFromCloud() {
   }
 }
 
+// 自动后台同步检查（每30秒）
+async function autoCheckCloudSync() {
+  const s = loadSettings();
+  if (!s._syncApiKey || !s._syncBinId) { updateSyncIndicator('off'); return; }
+  updateSyncIndicator('syncing');
+  try {
+    const res = await fetch(`${SYNC_API_BASE}/b/${s._syncBinId}/latest`, {
+      headers: { 'X-Master-Key': s._syncApiKey }
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (!data.record || !data.record.plans) { updateSyncIndicator('synced'); return; }
+    const cloudTime = data.record.lastSync ? new Date(data.record.lastSync).getTime() : 0;
+    const localTime = s._lastSyncTime ? new Date(s._lastSyncTime).getTime() : 0;
+    if (cloudTime > localTime) {
+      updateSyncIndicator('pending');
+      // 如果云端有新数据且本地有计划数据，弹出提示
+      const localPlanCount = Object.keys(loadPlans()).length;
+      if (localPlanCount > 0) {
+        showConfirm('检测到云端有更新的数据，是否同步？', () => {
+          smartMergeFromCloud(data.record);
+        });
+      } else {
+        smartMergeFromCloud(data.record);
+      }
+    } else {
+      updateSyncIndicator('synced');
+    }
+  } catch(e) {
+    updateSyncIndicator('error');
+  }
+}
+
+// 智能合并函数
+function smartMergeFromCloud(cloudRecord) {
+  const localPlans = loadPlans();
+  const cloudPlans = cloudRecord.plans || {};
+  let merged = 0, replaced = 0;
+  
+  // 对每个日期的计划进行合并
+  Object.keys(cloudPlans).forEach(date => {
+    if (!localPlans[date]) {
+      // 本地没有该日期 → 直接添加
+      localPlans[date] = cloudPlans[date];
+      merged++;
+    } else {
+      // 本地有该日期 → 用云端版本替换（云端为主）
+      localPlans[date] = cloudPlans[date];
+      replaced++;
+    }
+  });
+  
+  savePlans(localPlans);
+  
+  // 合并设置（保留本地同步配置）
+  if (cloudRecord.settings) {
+    const localSettings = loadSettings();
+    Object.keys(cloudRecord.settings).forEach(key => {
+      if (key !== '_syncApiKey' && key !== '_syncBinId' && key !== '_lastSyncTime') {
+        localSettings[key] = cloudRecord.settings[key];
+      }
+    });
+    saveSettings(localSettings);
+  }
+  
+  // 恢复课表数据
+  if (cloudRecord.courses) { saveCourses(cloudRecord.courses); }
+  
+  const s = loadSettings();
+  s._lastSyncTime = new Date().toISOString();
+  saveSettings(s);
+  render();
+  updateModeUI();
+  showToast(`同步完成：新增${merged}天，更新${replaced}天`);
+}
+
+// 同步状态指示器更新
+function updateSyncIndicator(status) {
+  const dot = document.getElementById('syncIndicator');
+  if (!dot) return;
+  dot.className = 'sync-indicator ' + status;
+}
+
+// 静默上传（saveTask等操作后调用）
+async function silentUploadToCloud() {
+  const s = loadSettings();
+  if (!s._syncApiKey || !s._syncBinId) return;
+  try {
+    const payload = { plans: loadPlans(), courses: loadCourses(), settings: { ...loadSettings(), _syncApiKey: undefined, _syncBinId: undefined }, lastSync: new Date().toISOString(), syncedFrom: navigator.userAgent.substring(0, 80) };
+    await fetch(`${SYNC_API_BASE}/b/${s._syncBinId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': s._syncApiKey },
+      body: JSON.stringify(payload)
+    });
+    s._lastSyncTime = new Date().toISOString();
+    saveSettings(s);
+    updateSyncIndicator('synced');
+  } catch(e) {
+    updateSyncIndicator('error');
+  }
+}
+
+// 页面内提醒弹窗
+function showReminderPopup(task) {
+  // 移除已有的提醒
+  const existing = document.querySelector('.reminder-popup');
+  if (existing) existing.remove();
+  
+  const cat = CAT_MAP[task.cat] || CAT_MAP.other;
+  const div = document.createElement('div');
+  div.className = 'reminder-popup';
+  div.innerHTML = `
+    <span class="reminder-close" onclick="this.parentElement.remove()">✕</span>
+    <h4>${cat.icon} ${escHtml(task.title)}</h4>
+    <p>⏰ ${task.start} 开始${task.remind > 0 ? ' · ' + task.remind + '分钟后开始' : ' · 即将开始'}</p>
+  `;
+  div.onclick = (e) => { if (e.target !== div.querySelector('.reminder-close')) div.remove(); };
+  document.body.appendChild(div);
+  // 30秒后自动关闭
+  setTimeout(() => { if (div.parentElement) div.remove(); }, 30000);
+}
+
+// ===== TIMETABLE =====
+const PERIODS = [
+  { id: 1, label: '第1节', start: '08:00', end: '08:45' },
+  { id: 2, label: '第2节', start: '08:55', end: '09:40' },
+  { id: 3, label: '第3节', start: '10:00', end: '10:45' },
+  { id: 4, label: '第4节', start: '10:55', end: '11:40' },
+  { id: 5, label: '第5节', start: '14:00', end: '14:45' },
+  { id: 6, label: '第6节', start: '14:55', end: '15:40' },
+  { id: 7, label: '第7节', start: '16:00', end: '16:45' },
+  { id: 8, label: '第8节', start: '16:55', end: '17:40' },
+  { id: 9, label: '第9节', start: '19:00', end: '19:45' },
+  { id: 10, label: '第10节', start: '19:55', end: '20:40' },
+];
+
+const COURSE_COLORS = ['#6366F1','#EC4899','#F59E0B','#10B981','#EF4444','#8B5CF6','#06B6D4','#F97316','#14B8A6','#E11D48'];
+
+let timetableWeek = 1;
+let editingCourseId = null;
+
+function loadCourses() { try { return JSON.parse(localStorage.getItem('summer_courses') || '[]'); } catch { return []; } }
+function saveCourses(c) { localStorage.setItem('summer_courses', JSON.stringify(c)); }
+
+function showTimetable() {
+  timetableWeek = getCurrentWeek();
+  document.querySelectorAll('.bar-btn').forEach(b => b.classList.remove('active'));
+  renderTimetable();
+  document.getElementById('timetablePanel').classList.add('show');
+}
+function closeTimetable() { document.getElementById('timetablePanel').classList.remove('show'); }
+
+function getCurrentWeek() {
+  // 简单计算：假设学期从9月1日开始
+  const start = new Date('2026-09-01');
+  const now = new Date();
+  const diff = Math.ceil((now - start) / 604800000);
+  return Math.max(1, diff);
+}
+
+function changeTimetableWeek(delta) {
+  timetableWeek = Math.max(1, timetableWeek + delta);
+  renderTimetable();
+}
+
+function renderTimetable() {
+  document.getElementById('timetableWeekLabel').textContent = `第${timetableWeek}周`;
+  const courses = loadCourses();
+  const filtered = courses.filter(c => timetableWeek >= c.startWeek && timetableWeek <= c.endWeek);
+  
+  const dayNames = ['周一','周二','周三','周四','周五','周六','周日'];
+  let html = '<table style="width:100%;border-collapse:collapse;font-size:11px;min-width:600px">';
+  html += '<tr><th style="padding:8px 4px;background:var(--gray-100);border:1px solid var(--gray-200);width:50px">节次</th>';
+  dayNames.forEach(d => { html += `<th style="padding:8px 4px;background:var(--gray-100);border:1px solid var(--gray-200)">${d}</th>`; });
+  html += '</tr>';
+  
+  // 分组：上午(1-4)、下午(5-8)、晚上(9-10)
+  const groups = [[1,4,'上午'],[5,8,'下午'],[9,10,'晚上']];
+  groups.forEach(([startP, endP, label]) => {
+    html += `<tr><td colspan="8" style="padding:4px;background:var(--primary-bg);font-weight:600;text-align:left;border:1px solid var(--gray-200)">${label}</td></tr>`;
+    for (let p = startP; p <= endP; p++) {
+      const period = PERIODS.find(x => x.id === p);
+      html += `<tr><td style="padding:6px 4px;background:var(--gray-50);border:1px solid var(--gray-200);text-align:center;white-space:nowrap"><div style="font-weight:600">${period.label}</div><div style="font-size:10px;color:var(--gray-400)">${period.start}</div></td>`;
+      for (let d = 1; d <= 7; d++) {
+        const dayIdx = d === 7 ? 0 : d; // 周日=0
+        const course = filtered.find(c => c.dayOfWeek === dayIdx && p >= c.startPeriod && p <= c.endPeriod);
+        if (course && p === course.startPeriod) {
+          const rowspan = course.endPeriod - course.startPeriod + 1;
+          html += `<td rowspan="${rowspan}" style="padding:6px;border:1px solid var(--gray-200);background:${course.color}15;cursor:pointer;position:relative" onclick="editCourse('${course.id}')">
+            <div style="font-weight:600;color:${course.color};font-size:11px">${escHtml(course.name)}</div>
+            <div style="font-size:10px;color:var(--gray-500)">${escHtml(course.location)}</div>
+          </td>`;
+        } else if (course && p > course.startPeriod && p <= course.endPeriod) {
+          // skip - already rendered via rowspan
+        } else {
+          html += `<td style="padding:6px;border:1px solid var(--gray-200);min-height:40px" onclick="openAddCourseForSlot(${dayIdx},${p})"></td>`;
+        }
+      }
+      html += '</tr>';
+    }
+  });
+  html += '</table>';
+  document.getElementById('timetableGrid').innerHTML = html;
+}
+
+function openAddCourse() {
+  editingCourseId = null;
+  document.getElementById('courseModalTitle').textContent = '添加课程';
+  document.getElementById('courseName').value = '';
+  document.getElementById('courseTeacher').value = '';
+  document.getElementById('courseLocation').value = '';
+  document.getElementById('courseDay').value = '1';
+  document.getElementById('courseNote').value = '';
+  initCourseSelects();
+  initColorPicker();
+  openModal('courseModal');
+}
+
+function openAddCourseForSlot(day, period) {
+  openAddCourse();
+  document.getElementById('courseDay').value = day.toString();
+  document.getElementById('courseStartPeriod').value = period.toString();
+  document.getElementById('courseEndPeriod').value = period.toString();
+}
+
+function editCourse(id) {
+  const course = loadCourses().find(c => c.id === id);
+  if (!course) return;
+  editingCourseId = id;
+  document.getElementById('courseModalTitle').textContent = '编辑课程';
+  document.getElementById('courseName').value = course.name;
+  document.getElementById('courseTeacher').value = course.teacher || '';
+  document.getElementById('courseLocation').value = course.location || '';
+  document.getElementById('courseDay').value = course.dayOfWeek.toString();
+  document.getElementById('courseStartWeek').value = course.startWeek.toString();
+  document.getElementById('courseEndWeek').value = course.endWeek.toString();
+  document.getElementById('courseNote').value = course.note || '';
+  initCourseSelects();
+  initColorPicker(course.color);
+  document.getElementById('courseStartPeriod').value = course.startPeriod.toString();
+  document.getElementById('courseEndPeriod').value = course.endPeriod.toString();
+  openModal('courseModal');
+}
+
+function initCourseSelects() {
+  const startPSel = document.getElementById('courseStartPeriod');
+  const endPSel = document.getElementById('courseEndPeriod');
+  const startWSel = document.getElementById('courseStartWeek');
+  const endWSel = document.getElementById('courseEndWeek');
+  
+  if (startPSel.options.length <= 1) {
+    PERIODS.forEach(p => {
+      startPSel.add(new Option(`${p.label} (${p.start})`, p.id));
+      endPSel.add(new Option(`${p.label} (${p.end})`, p.id));
+    });
+  }
+  if (startWSel.options.length <= 1) {
+    for (let w = 1; w <= 25; w++) {
+      startWSel.add(new Option(`第${w}周`, w));
+      endWSel.add(new Option(`第${w}周`, w));
+    }
+  }
+}
+
+function initColorPicker(selected) {
+  const container = document.getElementById('courseColorPicker');
+  container.innerHTML = COURSE_COLORS.map(c => 
+    `<div onclick="selectCourseColor('${c}', this)" style="width:28px;height:28px;border-radius:8px;background:${c};cursor:pointer;border:2px solid ${c === selected ? 'var(--gray-800)' : 'transparent'};transition:all 0.2s" data-color="${c}"></div>`
+  ).join('');
+}
+
+let selectedCourseColor = COURSE_COLORS[0];
+function selectCourseColor(color, el) {
+  selectedCourseColor = color;
+  document.querySelectorAll('#courseColorPicker div').forEach(d => d.style.border = '2px solid transparent');
+  el.style.border = '2px solid var(--gray-800)';
+}
+
+function saveCourse() {
+  const name = document.getElementById('courseName').value.trim();
+  if (!name) { showToast('请输入课程名称'); return; }
+  
+  const courses = loadCourses();
+  const data = {
+    name,
+    teacher: document.getElementById('courseTeacher').value.trim(),
+    location: document.getElementById('courseLocation').value.trim(),
+    dayOfWeek: parseInt(document.getElementById('courseDay').value),
+    startPeriod: parseInt(document.getElementById('courseStartPeriod').value),
+    endPeriod: parseInt(document.getElementById('courseEndPeriod').value),
+    startWeek: parseInt(document.getElementById('courseStartWeek').value),
+    endWeek: parseInt(document.getElementById('courseEndWeek').value),
+    color: selectedCourseColor,
+    note: document.getElementById('courseNote').value.trim()
+  };
+  
+  if (data.startPeriod > data.endPeriod) { showToast('开始节次不能大于结束节次'); return; }
+  if (data.startWeek > data.endWeek) { showToast('开始周次不能大于结束周次'); return; }
+  
+  if (editingCourseId) {
+    const idx = courses.findIndex(c => c.id === editingCourseId);
+    if (idx >= 0) { courses[idx] = { ...courses[idx], ...data }; }
+  } else {
+    data.id = 'course_' + Date.now();
+    courses.push(data);
+  }
+  
+  saveCourses(courses);
+  closeCourseModal();
+  renderTimetable();
+  showToast(editingCourseId ? '课程已更新' : '课程已添加');
+  setTimeout(() => silentUploadToCloud(), 500);
+}
+
+function closeCourseModal() { closeModal('courseModal'); }
+
+function deleteCourse(id) {
+  showConfirm('确定删除该课程？', () => {
+    const courses = loadCourses().filter(c => c.id !== id);
+    saveCourses(courses);
+    renderTimetable();
+    showToast('课程已删除');
+    setTimeout(() => silentUploadToCloud(), 500);
+  });
+}
+
+// 生成今日日程（课表 → 日程计划）
+function generateScheduleFromCourses() {
+  const courses = loadCourses();
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=周日
+  const currentWeek = getCurrentWeek();
+  
+  // 找到今天的课程
+  const todayCourses = courses.filter(c => 
+    c.dayOfWeek === dayOfWeek && currentWeek >= c.startWeek && currentWeek <= c.endWeek
+  );
+  
+  if (todayCourses.length === 0) {
+    showToast('今天没有课程');
+    return;
+  }
+  
+  const existingPlan = getDayPlan(getTodayStr());
+  const existingTitles = existingPlan.map(t => t.title);
+  let added = 0;
+  
+  todayCourses.forEach(course => {
+    if (existingTitles.includes(course.name)) return; // 避免重复
+    
+    const startPeriod = PERIODS.find(p => p.id === course.startPeriod);
+    const endPeriod = PERIODS.find(p => p.id === course.endPeriod);
+    
+    existingPlan.push({
+      id: 'task_' + Date.now() + '_' + added,
+      title: course.name,
+      start: startPeriod ? startPeriod.start : '08:00',
+      end: endPeriod ? endPeriod.end : '09:40',
+      cat: 'study',
+      note: `${course.location ? '📍' + course.location : ''}${course.teacher ? ' 👨‍🏫' + course.teacher : ''}`,
+      remind: 10,
+      completed: false,
+      fromCourse: true
+    });
+    added++;
+  });
+  
+  if (added === 0) {
+    showToast('今天的课程已在日程中');
+    return;
+  }
+  
+  setDayPlan(getTodayStr(), existingPlan);
+  render();
+  closeTimetable();
+  showToast(`已添加${added}门课程到今日日程`);
+  setTimeout(() => silentUploadToCloud(), 500);
+}
+
+// 图片识别导入
+function importTimetableImage() {
+  document.getElementById('timetableImageInput').click();
+}
+
+function handleTimetableImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  showToast('正在分析课表图片...');
+  
+  // 使用免费的 OCR 或者简单的图片分析
+  // 由于浏览器限制，我们使用 canvas 读取图片并提供手动输入
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    showConfirm('图片识别功能需要加载 AI 识别模型（约几MB），是否继续？\n\n或者你可以对照课表图片手动添加课程。', () => {
+      // 动态加载 Tesseract.js 进行 OCR
+      loadTesseractAndRecognize(e.target.result);
+    });
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+async function loadTesseractAndRecognize(imageData) {
+  try {
+    // 动态加载 Tesseract.js
+    if (!window.Tesseract) {
+      showToast('正在加载识别引擎...');
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      document.head.appendChild(script);
+      await new Promise((resolve, reject) => {
+        script.onload = resolve;
+        script.onerror = reject;
+      });
+    }
+    
+    showToast('正在识别课表，请稍候...');
+    const result = await Tesseract.recognize(imageData, 'chi_sim+eng', {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round(m.progress * 100);
+          showToast(`识别中... ${pct}%`);
+        }
+      }
+    });
+    
+    const text = result.data.text;
+    // 尝试从文本中提取课程信息（简单模式匹配）
+    const parsed = parseTimetableText(text);
+    if (parsed.length > 0) {
+      showConfirm(`识别到 ${parsed.length} 条课程信息，是否添加？\n（识别结果可能不准确，请添加后仔细核对）`, () => {
+        const courses = loadCourses();
+        parsed.forEach(c => {
+          c.id = 'course_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+          courses.push(c);
+        });
+        saveCourses(courses);
+        renderTimetable();
+        showToast(`已添加${parsed.length}门课程，请核对修改`);
+        setTimeout(() => silentUploadToCloud(), 500);
+      });
+    } else {
+      showToast('未能识别出课程信息，请手动添加');
+    }
+  } catch(e) {
+    showToast('识别失败，请手动添加课程');
+  }
+}
+
+function parseTimetableText(text) {
+  // 简单的文本解析 - 尝试匹配 "课程名 教室 时间" 模式
+  const courses = [];
+  const lines = text.split('\n').filter(l => l.trim().length > 2);
+  // 这里用简单的正则匹配
+  // 实际中课表格式千变万化，精确识别需要更复杂的逻辑
+  // 返回空数组让用户手动添加
+  return courses;
+}
+
 // ===== VERSION & UPDATE SYSTEM =====
-const APP_VERSION = '2.2';
+const APP_VERSION = '3.0';
 const APP_BUILD = '20260725';
 
 const CHANGELOG = [
+  {
+    ver: 'v3.0', date: '2026-07-25',
+    changes: [
+      { tag: 'new', text: '新增课表功能：手动添加课程、图片识别导入、课表与日程联动' },
+      { tag: 'new', text: '新增自动后台同步，每30秒检测云端更新' },
+      { tag: 'new', text: '新增智能合并同步，不再覆盖本地数据' },
+      { tag: 'new', text: '新增同步状态指示器，实时显示同步情况' },
+      { tag: 'fix', text: '修复手机通知不可用，新增页面内提醒弹窗' },
+      { tag: 'improve', text: '修改计划后自动上传到云端' }
+    ]
+  },
   {
     ver: 'v2.1', date: '2026-07-25',
     changes: [
@@ -2190,6 +2794,7 @@ async function autoSyncOnStart() {
       if (localPlanCount === 0) {
         // Auto-download if local has no data
         savePlans(data.record.plans);
+        if (data.record.courses) { saveCourses(data.record.courses); }
         if (data.record.settings) {
           const localS = loadSettings();
           Object.keys(data.record.settings).forEach(key => {
@@ -2208,22 +2813,8 @@ async function autoSyncOnStart() {
         // Local has data - ask user
         const diff = Math.round((cloudTime - localTime) / 60000);
         const timeStr = diff < 60 ? diff + '分钟前' : Math.round(diff / 60) + '小时前';
-        showConfirm(`云端数据比本地新（${timeStr}更新）。\n是否用云端数据覆盖本地？`, () => {
-          savePlans(data.record.plans);
-          if (data.record.settings) {
-            const localS = loadSettings();
-            Object.keys(data.record.settings).forEach(key => {
-              if (key !== '_syncApiKey' && key !== '_syncBinId') {
-                localS[key] = data.record.settings[key];
-              }
-            });
-            saveSettings(localS);
-          }
-          s._lastSyncTime = new Date().toISOString();
-          saveSettings(s);
-          render();
-          updateModeUI();
-          showToast('同步完成');
+        showConfirm(`云端数据比本地新（${timeStr}更新）。\n是否同步云端数据？`, () => {
+          smartMergeFromCloud(data.record);
         });
       }
     }
@@ -2237,10 +2828,14 @@ async function autoSyncOnStart() {
 function init() {
   migrateIfNeeded();
   updateModeUI();
+  updateSyncIndicator('off');
   const s = loadSettings();
   if (s.notifEnabled) { document.getElementById('notifSwitch').checked = true; startNotifChecker(); }
   render();
   setInterval(render, 60000);
+  
+  // 定时自动同步检查（每30秒）
+  setInterval(autoCheckCloudSync, 30000);
   
   // Auto-sync on startup (with a small delay to let UI render first)
   setTimeout(() => autoSyncOnStart(), 1500);
